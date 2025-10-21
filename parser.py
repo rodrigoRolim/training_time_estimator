@@ -1,6 +1,6 @@
 import xml.etree.ElementTree as ET
 
-def parse_tcx(filenam):
+def parse_tcx(filename):
   ns = {'txc': 'http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2'}
   tree = ET.parse(filename)
   root = tree.getroot()
