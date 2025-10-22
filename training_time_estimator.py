@@ -13,8 +13,7 @@ def estimate_training_time_dynamic_ftp(
   total_dist_m = 0
   details = []
 
-  for i, (dist_km, grade, heading) in enumerate(route_segments):
-    dist_m = dist_km * 1000
+  for i, (dist_m, grade, heading) in enumerate(route_segments):
     slope = math.atan(grade / 100)
     intensity = get_intensity_from_grade(grade)
     power = ftp * intensity
@@ -30,7 +29,7 @@ def estimate_training_time_dynamic_ftp(
 
     details.append({
       "segment": i + 1,
-      "distance_km": dist_km,
+      "distance_km": dist_m / 1000,
       "grade_percent": grade,
       "wind_component_kmh": wind_component * 3.6,
       "speed_kmh": rider_velocity * 3.6,
@@ -51,8 +50,7 @@ def estimate_training_time_static_ftp(
   power = ftp * intensity
   details = []
 
-  for i, (dist_km, grade, heading) in enumerate(route_segments):
-    dist_m = dist_km * 1000
+  for i, (dist_m, grade, heading) in enumerate(route_segments):
     slope = math.atan(grade / 100)
     wind_component = wind_speed / 3.6 * math.cos(math.radians(heading - wind_dir))
 
@@ -66,7 +64,7 @@ def estimate_training_time_static_ftp(
 
     details.append({
       "segment": i + 1,
-      "distance_km": dist_km,
+      "distance_km": dist_m / 1000,
       "grade_percent": grade,
       "wind_component_kmh": wind_component * 3.6,
       "speed_kmh": rider_velocity * 3.6,
