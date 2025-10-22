@@ -45,9 +45,11 @@ I create the algorithm in python just for representation. All this code will be 
 
 from training_time_estimator import estimate_training_time_dynamic_ftp, estimate_training_time_static_ftp
 from create_random_route import create_route
+from build_route import build_route_from_tcxfile
 
-route = create_route(50, 30) # create a route with 50 segments and 30° by step
-
+# route = create_route(50, 30) # create a route with 50 segments and 30° by step
+tcx_file = './2023_Garmin_Gravel_Worlds_150_p_b_Lauf.tcx'
+route = build_route_from_tcxfile(tcx_file, smoothing_window=3)
 # FTP varies based on zones. I think this version is more realistic
 time_d_ftp, dist_d_ftp, details_d_ftp = estimate_training_time_dynamic_ftp(
   ftp=250, # in watts
