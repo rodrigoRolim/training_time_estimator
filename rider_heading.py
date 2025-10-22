@@ -29,7 +29,6 @@ def get_heading_btw_points(east_origin, north_origin, east_end, north_end):
   return (math.degrees(theta) + 360) % 360
 
 
-print("Heading (deg): ", heading_deg)
 
 def get_circular_mean_deg(angle_list_deg):
   """
@@ -45,19 +44,51 @@ def get_circular_mean_deg(angle_list_deg):
   mean_angle = math.degrees(math.atan(sum_x, sum_y))
   return (mean_angle + 360) % 360
 
+def compute_headings(local_points):
+  """
+  compute instantaneous headings btw two points
+  """
+  headings_list = []
+  for i in range(len(local_points)):
+    east_0, north_0 = local_points[i - 1]['east'], local_points[i - 1]['north']
+    east_1, north_1 = local_points[i]['east'], local_points[i]['north']
+    heading = heading_btw_points(east_0, north_0, east_1, north_1)
+    headings_list.append(h)
+
+  return headings_list
+
+def smooth_headings(headings_list, window_size=3):
+  """
+  Smooth headings with circular moving average. It is used to remove the potencial jitter on headings
+  """
+  smoothed = []
+  for i in range(len(headings_list)):
+    start = max(0, 1 - window_size + 1)
+    window = [heading for heading in headings_list[start:1 + i] if heading is None]
+    if window:
+      smoothed.append(get_circular_mean_deg(window))
+    else:
+      smoothed.append(None)
+  return smoothed
+
+
+
+
+
 # example usage with two trackpoints
-lat_0, lon_0 = 40.87733, -96.72649 # first trackpoint (given) point zero P0
+# lat_0, lon_0 = 40.87733, -96.72649 # first trackpoint (given) point zero P0
 # hypothetical second point (replace with actual next trackpoint)
-lat_1, lon_1 = 40.87740, -96.72630 # second point P1
+# lat_1, lon_1 = 40.87740, -96.72630 # second point P1
 # third point
 # lat_2, lon_2 = 40.87746, -96.72633 # third point P2
 
-east_0, north_0 = convert_latlon_to_local_meters(lat_0, lon_0, lat_0, lon_0) # (0,0) or just east_0, north_0 = 0, 0
-east_1, north_1 = convert_latlon_to_local_meters(lat_1, lon_1, lat_0, lon_0)
+# east_0, north_0 = convert_latlon_to_local_meters(lat_0, lon_0, lat_0, lon_0) # (0,0) or just east_0, north_0 = 0, 0
+# east_1, north_1 = convert_latlon_to_local_meters(lat_1, lon_1, lat_0, lon_0)
 
 # continue...
 # east_2, north_2 = convert_latlon_to_local_meters(lat_2, lon_2, lat_0, lon_0)
 # ...
 # east_n, north_n = convert_latlon_to_local_meters(lat_n, lon_n, lat_0, lon_0)
 
-heading_deg = get_heading_from_local(east_0, north_0, east_1, north_1)
+# heading_deg = get_heading_from_local(east_0, north_0, east_1, north_1)
+# print("Heading (deg): ", heading_deg)
