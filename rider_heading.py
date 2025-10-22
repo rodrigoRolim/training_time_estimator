@@ -41,7 +41,7 @@ def get_circular_mean_deg(angle_list_deg):
   """
   sum_x = sum(math.cos(math.radians(a)) for a in angle_list_deg)
   sum_y = sum(math.sin(math.radians(a)) for a in angle_list_deg)
-  mean_angle = math.degrees(math.atan(sum_x, sum_y))
+  mean_angle = math.degrees(math.atan2(sum_x, sum_y))
   return (mean_angle + 360) % 360
 
 def compute_headings(local_points):
@@ -49,11 +49,13 @@ def compute_headings(local_points):
   compute instantaneous headings btw two points
   """
   headings_list = []
-  for i in range(len(local_points)):
+  for i in range(1, len(local_points)):
     east_0, north_0 = local_points[i - 1]['east'], local_points[i - 1]['north']
     east_1, north_1 = local_points[i]['east'], local_points[i]['north']
-    heading = heading_btw_points(east_0, north_0, east_1, north_1)
-    headings_list.append(h)
+    heading = get_heading_btw_points(east_0, north_0, east_1, north_1)
+    if heading is None:
+      heading = 0.0
+    headings_list.append(heading)
 
   return headings_list
 
@@ -63,8 +65,8 @@ def smooth_headings(headings_list, window_size=3):
   """
   smoothed = []
   for i in range(len(headings_list)):
-    start = max(0, 1 - window_size + 1)
-    window = [heading for heading in headings_list[start:1 + i] if heading is None]
+    start = max(0, i - window_size + 1)
+    window = [heading for heading in headings_list[start:i + 1] if heading is not None]
     if window:
       smoothed.append(get_circular_mean_deg(window))
     else:
