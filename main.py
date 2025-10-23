@@ -46,13 +46,17 @@ I create the algorithm in python just for representation. All this code will be 
 from training_time_estimator import estimate_training_time_dynamic_ftp, estimate_training_time_static_ftp
 from create_random_route import create_route
 from build_route import build_route_from_tcxfile
+from FTP_estimator import update_ftp
 
+FTP_BASE = 250 # in watts
 # route = create_route(50, 30) # create a route with 50 segments and 30° by step
-tcx_file = './2023_Garmin_Gravel_Worlds_150_p_b_Lauf.tcx'
+tcx_file = './routes/2023_Garmin_Gravel_Worlds_150_p_b_Lauf.tcx'
 route = build_route_from_tcxfile(tcx_file, smoothing_window=3)
+# update FTP based on previous rides
+FTP = update_ftp(FTP_BASE, 'ride_historics')
 # FTP varies based on zones. I think this version is more realistic
 time_d_ftp, dist_d_ftp, details_d_ftp = estimate_training_time_dynamic_ftp(
-  ftp=250, # in watts
+  ftp=FTP, # in watts
   route_segments=route,
   wind_speed=10, # m/s
   wind_dir=90, # wind direction in angle 0° = winds come from north; 90° = from East; 180° = from South; 270° = from west (just examplification)
@@ -61,7 +65,7 @@ time_d_ftp, dist_d_ftp, details_d_ftp = estimate_training_time_dynamic_ftp(
 )
 # FTP is constant here
 time_s_ftp, dist_s_ftp, details_s_ftp = estimate_training_time_static_ftp(
-  ftp=250,
+  ftp=FTP,
   route_segments=route,
   wind_speed=10,
   wind_dir=90,
