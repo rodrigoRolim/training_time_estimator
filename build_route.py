@@ -3,6 +3,7 @@ from utils import R
 from parser import parse_tcx
 from rider_heading import compute_headings, smooth_headings
 from grades import compute_grades
+from zones import get_zone_by_grade
 
 def convert_latlon_to_local_points(points):
   """
@@ -33,7 +34,7 @@ def build_route_from_tcxfile(tcx_file, smoothing_window=3):
   smoothed_headings = smooth_headings(headings_list, smoothing_window)
   grades = compute_grades(local_points)
 
-  # in each tuple, we have (distance, grade, heading)
+  # in each tuple, we have (distance, grade, heading, zone)
   route = []
   for i in range(1, len(local_points)):
     distance = local_points[i]['distance']
@@ -43,6 +44,23 @@ def build_route_from_tcxfile(tcx_file, smoothing_window=3):
   
   return route
 
+def build_route_from_tcxfile_with_zone_name(tcx_file, smoothing_window=3):
+  points = parse_tcx(tcx_file)
+  local_points = convert_latlon_to_local_points(points)
+  headings_list = compute_headings(local_points)
+  smoothed_headings = smooth_headings(headings_list, smoothing_window)
+  grades = compute_grades(local_points)
+
+  # in each tuple, we have (distance, grade, heading, zone)
+  route = []
+  for i in range(1, len(local_points)):
+    distance = local_points[i]['distance']
+    grade = grades[i - 1]
+    heading = smoothed_headings[i - 1]
+    zone_name = get_zone_by_grade(grade)
+    route.append((distance, grade, heading, zone_name))
+  
+  return route
 # Example of usage
 # tcx_file = './2023_Garmin_Gravel_Worlds_150_p_b_Lauf.tcx'
 # route = build_route_from_tcxfile(tcx_file, smoothing_window=3)
