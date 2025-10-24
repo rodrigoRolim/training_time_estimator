@@ -14,18 +14,20 @@ def parse_tcx(filename):
     lon_el = tp.find('tcx:Position/tcx:LongitudeDegrees', tcx_namespace)
     dist_el = tp.find('tcx:DistanceMeters', tcx_namespace)
     alt_el = tp.find('tcx:AltitudeMeters', tcx_namespace)
+
     if lat_el is not None and lon_el is not None and dist_el is not None and alt_el is not None:
       current_dist_m = float(dist_el.text)
       delta_dist_m = max((current_dist_m - prev_dist_m), 0.0)
-      # print(float(dist_el.text), delta_dist)
+
       points.append({
         'latitude': float(lat_el.text),
         'longitude': float(lon_el.text),
         'distance': delta_dist_m, # in meters
         'altitude': float(alt_el.text)
       })
+      
       prev_dist_m = current_dist_m
-      # d = d + delta_dist
+
   return points
 
 # filename = './2023_Garmin_Gravel_Worlds_150_p_b_Lauf.tcx'
