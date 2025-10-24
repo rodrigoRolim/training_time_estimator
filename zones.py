@@ -18,20 +18,6 @@ def get_power_from_zone(zone_name, ftp):
     return zone['min']  # take minimum for Z6
   return (zone['min'] + zone['max']) / 2
 
-def get_intensity_from_grade(grade):
-  if grade < -2:
-    return 0.6 # descent - Z1
-  elif grade < 1:
-    return 0.7 # flat - Z2
-  elif grade < 3:
-    return 0.85 # slight climb - Z3
-  elif grade < 6:
-    return 1.0 # moderate climb - Z4
-  elif grade < 10:
-    return 1.15 # intense climb - Z5
-  else:
-    return 1.3 # very intense climb - Z6
-
 def get_zone_by_grade(grade):
   if grade < -2:
     return 'Z1'  # Active Recovery (descent)
@@ -46,3 +32,16 @@ def get_zone_by_grade(grade):
   else:
     return 'Z6'  # Anaerobic (very steep)
 
+def get_intensity_from_grade(grade):
+  if grade < -2:
+    return 0.6 # descent - Z1
+  elif grade < 1:
+    return 0.7 # flat - Z2
+  elif grade < 3:
+    return 0.85 # slight climb - Z3
+  elif grade < 6:
+    return 1.0 # moderate climb - Z4
+  elif grade < 10:
+    return 1.15 # intense climb - Z5
+  else:
+    return 1.3 # very intense climb - Z6
