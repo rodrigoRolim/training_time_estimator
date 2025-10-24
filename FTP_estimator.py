@@ -24,8 +24,18 @@ if the TSB is positve, then encrease the effective FTP proporcionally
 import xml.etree.ElementTree as ET
 from datetime import datetime
 import glob
+import numpy as np
+
+def get_normalized_power(watts, window=30):
+  watts = np.array(watts, dtype=float)
+  rolling_mean = np.convolve(watts, np.ones(window) / window, mode='valid') # moving average
+  rolling_fourth_power = rolling_mean ** 4
+  return (np.mean(rolling_fourth_power)) ** 0.25
 
 def get_TSS_from_tcx_file(file_path, FTP_BASE=250):
+  if FTP_BASE <= 0:
+    return 0
+
   tree = ET.parse(file_path)
   root = tree.getroot()
   tcx_namespace = {
@@ -42,11 +52,12 @@ def get_TSS_from_tcx_file(file_path, FTP_BASE=250):
     except:
       continue
   
-  avg_power = sum(watts) / len(watts) if watts else 0
+  np_value = get_normalized_power(watts)
 
   # compute approximate TSS
-  IF = avg_power / FTP_BASE if FTP_BASE > 0 else 0 # intensity force
-  TSS = (total_time * avg_power) / (FTP_BASE * 3600) * 100
+  IF = np_value / FTP_BASE # intensity force
+  duration_hours = total_time / 3600
+  TSS = duration_hours * (IF ** 2) * 100
 
   # Extract start time
   start_time_str = root.find('.//tcx:Lap', tcx_namespace).get('StartTime')
@@ -65,11 +76,7 @@ def get_tss_list(root_path=".", FTP_BASE=250):
 
   return TSS_LIST
 
-# print(get_tss_list('ride_historics'))
-
-
 # compute CTL, ATL and TSB
-
 # CTL chronic training load
 def compute_CTL(TSS, current_ctl):
   return current_ctl + (TSS - current_ctl) / 42  # 42-day constant
@@ -83,7 +90,7 @@ def compute_TSB(CTL, ATL):
   return CTL - ATL
 
 def get_metrics_list(root_path='.', FTP_BASE=250):
-  TSS_LIST = get_tss_list(f'{root_path}', FTP_BASE) # the TSS_LIST must be a constant persisted list
+  TSS_LIST = get_tss_list(f'{root_path}', FTP_BASE) # the TSS_LIST must be a constant persisted into DB
   CTL, ATL = 0, 0
   CTL_LIST, ATL_LIST, TSB_LIST = [], [], []
 
@@ -98,24 +105,20 @@ def get_metrics_list(root_path='.', FTP_BASE=250):
     tss_entry['CTL'] = CTL
     tss_entry['ATL'] = ATL
     tss_entry['TSB'] = TSB
-    # CTL_LIST.append(CTL)
-    # ATL_LIST.append(ATL)
-    # TSB_LIST.append(TSB)
   
   return TSS_LIST
 
-def adjust_ftp_using_TSB(TSS_LIST, FTP_BASE=250):
+def adjust_ftp_using_TSB(latest_tsb, FTP_BASE=250):
   k1 = 0.005 # scaling factor
-  latest_tsb = TSS_LIST[-1]['TSB']
-
   effective_ftp = max(FTP_BASE * (1 + k1 * latest_tsb), FTP_BASE * 0.85) # limit minimum
   return effective_ftp
 
 def update_ftp(FTP_BASE = 250, historic_file="."):
   TSS_LIST = get_metrics_list(historic_file, FTP_BASE)
-  adjusted_ftp = adjust_ftp_using_TSB(TSS_LIST, FTP_BASE)
+  adjusted_ftp = adjust_ftp_using_TSB(TSS_LIST[-1]['TSB'], FTP_BASE)
 
   return adjusted_ftp
+
 # print(adjusted_ftp)
 # for e in TSS_LIST:
 #  print(f"{e['date']}: TSS={e['TSS']:.1f}, CTL={e['CTL']:.1f}, ATL={e['ATL']:.1f}, TSB={e['TSB']:.1f}")
