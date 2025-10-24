@@ -47,15 +47,17 @@ from training_time_estimator import estimate_training_time_dynamic_ftp, estimate
 from create_random_route import create_route
 from build_route import build_route_from_tcxfile, build_route_from_tcxfile_with_zone_name
 from FTP_estimator import update_ftp
+from workout import group_segments_by_zone_and_time, generate_mrc_from_zones
+import pandas as pd
 
 FTP_BASE = 250 # in watts
+# update FTP based on previous ride
+FTP = update_ftp(FTP_BASE, 'ride_historics')
 # route = create_route(50, 30) # create a route with 50 segments and 30° by step
 tcx_file = './routes/2023_Garmin_Gravel_Worlds_150_p_b_Lauf.tcx'
 route = build_route_from_tcxfile(tcx_file, smoothing_window=3)
 route_with_zonename = build_route_from_tcxfile_with_zone_name(tcx_file, smoothing_window=3)
 
-# update FTP based on previous rides
-FTP = update_ftp(FTP_BASE, 'ride_historics')
 
 # FTP varies based on zones. I think this version is more realistic
 time_d_ftp, dist_d_ftp, details_d_ftp = estimate_training_time_dynamic_ftp(
@@ -76,6 +78,7 @@ time_s_ftp, dist_s_ftp, details_s_ftp = estimate_training_time_static_ftp(
   bike_mass=8
 )
 
+# more realistic
 time_z_ftp, dist_z_ftp, details_z_ftp = estimate_training_time_power_zones(
   ftp=FTP,
   route_segments=route_with_zonename,
@@ -84,16 +87,28 @@ time_z_ftp, dist_z_ftp, details_z_ftp = estimate_training_time_power_zones(
   rider_mass=75,
   bike_mass=8
 )
-
+# time_min power_w zone
 hours_d_ftp, minutes_d_ftp = time_d_ftp
 hours_s_ftp, minutes_s_ftp = time_s_ftp
 hours_z_ftp, minutes_z_ftp = time_z_ftp
 
-print(f"Estimated time for dynamic ftp based on zones: {hours_d_ftp}h {minutes_d_ftp}m")
-print(f"Distance: {dist_d_ftp}km")
-print("--------")
-print(f"Estimated time for static ftp: {hours_s_ftp}h {minutes_s_ftp}m")
-print(f"Distance: {dist_s_ftp}km")
-print("--------")
-print(f"Estimated time for ftp based on zones: {hours_z_ftp}h {minutes_z_ftp}m")
-print(f"Distance: {dist_z_ftp}km")
+# print(f"Estimated time for dynamic ftp based on intensities: {hours_d_ftp}h {minutes_d_ftp}m")
+# print(f"Distance: {dist_d_ftp}km")
+# print("--------")
+# print(f"Estimated time for static ftp: {hours_s_ftp}h {minutes_s_ftp}m")
+# print(f"Distance: {dist_s_ftp}km")
+# print("--------")
+# print(f"Estimated time for ftp based on zones: {hours_z_ftp}h {minutes_z_ftp}m")
+# print(f"Distance: {dist_z_ftp}km")
+
+# print(f"details: {details_z_ftp[:3]}")
+
+# print("-------- generate the workout---------")
+segments = [
+  {'time_min': d['time_min'], 'power_w': d['power_w'], 'zone': d['zone']}
+  for d in details_z_ftp
+]
+
+
+groups_merged = group_segments_by_zone_and_time(segments)
+generate_mrc_from_zones(groups_merged, FTP)
