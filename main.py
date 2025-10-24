@@ -92,23 +92,22 @@ hours_d_ftp, minutes_d_ftp = time_d_ftp
 hours_s_ftp, minutes_s_ftp = time_s_ftp
 hours_z_ftp, minutes_z_ftp = time_z_ftp
 
-# print(f"Estimated time for dynamic ftp based on intensities: {hours_d_ftp}h {minutes_d_ftp}m")
-# print(f"Distance: {dist_d_ftp}km")
-# print("--------")
-# print(f"Estimated time for static ftp: {hours_s_ftp}h {minutes_s_ftp}m")
-# print(f"Distance: {dist_s_ftp}km")
-# print("--------")
-# print(f"Estimated time for ftp based on zones: {hours_z_ftp}h {minutes_z_ftp}m")
-# print(f"Distance: {dist_z_ftp}km")
+print(f"Estimated time for dynamic ftp based on intensities: {hours_d_ftp}h {minutes_d_ftp}m")
+print(f"Distance: {dist_d_ftp}km")
+print("--------")
+print(f"Estimated time for static ftp: {hours_s_ftp}h {minutes_s_ftp}m")
+print(f"Distance: {dist_s_ftp}km")
+print("--------")
+print(f"Estimated time for ftp based on zones: {hours_z_ftp}h {minutes_z_ftp}m")
+print(f"Distance: {dist_z_ftp}km")
 
 # print(f"details: {details_z_ftp[:3]}")
 
-# print("-------- generate the workout---------")
+print("-------- generate the workout---------")
 segments = [
   {'time_min': d['time_min'], 'power_w': d['power_w'], 'zone': d['zone']}
   for d in details_z_ftp
 ]
-
 
 groups_merged = group_segments_by_zone_and_time(segments)
 generate_mrc_from_zones(groups_merged, FTP)
