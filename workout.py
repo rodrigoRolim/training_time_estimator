@@ -1,4 +1,4 @@
-def group_segments_by_zone_and_time(segments, min_duration=0.5):
+def group_segments_by_zone_and_time(segments, min_duration=0.5, min_segments=5):
   merged = []
   current_zone = segments[0]['zone']
   total_time = 0
@@ -10,29 +10,17 @@ def group_segments_by_zone_and_time(segments, min_duration=0.5):
     power = segment.get('power_w', 100)
     time_min = segment.get('time_min', min_duration)
 
-    if zone == current_zone:
+    if zone == current_zone and (total_time < min_duration or len(buffer) < min_segments):
       # same zone, accumulate
       buffer.append(segment)
       total_time += time_min
       total_power += power
     else:
-      # zone changed, commit previous zone
-      if total_time >= min_duration:
-        merged.append({
-          'zone': current_zone,
-          'power_w': total_power / len(buffer),
-          'time_min': total_time
-        })
-      else:
-        # too short -> merge into previous if exists
-        if merged:
-          merged[-1]['time_min'] += total_time
-        else:
-          merged.append({
-            'zone': current_zone,
-            'power_w': total_power / len(buffer),
-            'time_min': total_time
-          })
+      merged.append({
+        'zone': current_zone,
+        'power_w': total_power / len(buffer),
+        'time_min': total_time
+      })
 
       # reset accumulators
       current_zone = zone
@@ -41,14 +29,30 @@ def group_segments_by_zone_and_time(segments, min_duration=0.5):
       buffer = [segment]
 
   # commit the last buffer
-  if total_time > 0:
+  if buffer:
     merged.append({
-      'zone': current_zone,
-      'power_w': total_power / len(buffer),
-      'time_min': total_time
+        'zone': current_zone,
+        'power_w': total_power / len(buffer),
+        'time_min': total_time
     })
 
   return merged
+
+def aggregate_by_distance(points, min_distance=100):
+  aggregated = []
+  acc_distance = 0
+  start = points[0]
+
+  for i in range(1, len(points)):
+    distance = get_distance(points[i - 1], points[i])
+    acc_distance += d
+
+    if acc_distance >= min_distance or i == len(points) - 1:
+      grade = get_grade(start, points[i])
+      aggregated.append({
+        'distance': acc_distance,
+        'grade': 
+      })
 
 def generate_mrc_from_zones(segments, ftp, filename="example.mrc"):
   grouped = group_segments_by_zone_and_time(segments)

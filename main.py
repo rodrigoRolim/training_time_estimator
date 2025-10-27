@@ -54,7 +54,7 @@ FTP_BASE = 250 # in watts
 # update FTP based on previous ride
 FTP = update_ftp(FTP_BASE, 'ride_historics')
 # route = create_route(50, 30) # create a route with 50 segments and 30° by step
-tcx_file = './routes/2023_Garmin_Gravel_Worlds_150_p_b_Lauf.tcx'
+tcx_file = './routes/onthegomap-2.4-km-route.tcx'
 route = build_route_from_tcxfile(tcx_file, smoothing_window=3)
 route_with_zonename = build_route_from_tcxfile_with_zone_name(tcx_file, smoothing_window=3)
 
