@@ -7,7 +7,7 @@ def parse_tcx(filename):
 
   # Extract trackpoints: lat, lon, distance, altitude
   points = []
-  # d = 0.0
+
   prev_dist_m = 0.0
   for tp in root.findall('.//tcx:Trackpoint', tcx_namespace):
     lat_el = tp.find('tcx:Position/tcx:LatitudeDegrees', tcx_namespace)
