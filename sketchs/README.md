@@ -1,0 +1,16 @@
+#### Estimate training time based on FTP of the rider
+
+##### To execute this code you will need:
+- python installed in your machine
+- run pip install pandas
+- run python main.py
+
+
+| Step                                             | Description                                                                                   | Your Current Status                                                                                                                         | Next Steps                                                                                   |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| **1. Use historical data to pull power numbers** | Retrieve past rides to understand the rider’s actual power curve (e.g., time in Z1–Z6 zones). | 🚧 Not yet, but your model already assumes a constant fraction of FTP — you can later replace that with real per-zone or per-interval data. | Implement parsing of `.fit` or `.tcx` files to extract historical power/time distributions.  |
+| **2. Upload route file**                         | The user uploads a GPX/TCX file defining the route.                                           | ✅ You’re already reading route segments (distance, slope, heading).                                                                         | Just automate this: parse uploaded files directly instead of defining route arrays manually. |
+| **3. Get weather data for a specific day**       | Use APIs (e.g., OpenWeatherMap) to get wind speed/direction, temperature, etc.                | ⚙️ You already have parameters for wind speed and direction.                                                                                | Connect this to a live API to fill those parameters dynamically.                             |
+| **4. Estimate completion time**                  | Combine historical power data + weather + FTP to predict ride duration.                       | ✅ You already have this implemented beautifully with your physics model.                                                                    | Refine by including variable intensity over time (e.g., fatigue, terrain pacing).            |
+| **5. Adjust target completion time**             | User defines a faster/slower target → system computes required extra power.                   | ⚙️ Not yet, but your function already isolates power → time. You just need to invert it (time → power).                                     | Add a loop or solver to find the power needed for a target time.                             |
+| **6. Export workout file (.zwo, .mrc, etc.)**    | Generate and optionally push structured workouts to platforms like Zwift or TrainingPeaks.    | 🚧 Not yet implemented.                                                                                                                     | Use libraries to export `.zwo` XML or `.fit` workouts. Later: integrate API upload.          |
