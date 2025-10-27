@@ -78,8 +78,3 @@ def build_route_from_tcxfile_with_zone_name(tcx_file, smoothing_window=3, min_di
       start_index = i
 
   return route
-# Example of usage
-# tcx_file = './2023_Garmin_Gravel_Worlds_150_p_b_Lauf.tcx'
-# route = build_route_from_tcxfile(tcx_file, smoothing_window=3)
-# for r in route[:10]: # show the first 10 points
-#  print(r)
