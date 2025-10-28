@@ -1,8 +1,9 @@
 R = 6371000.0 # Earth radius in meters
 
-def format_time(total_seconds):
-  total_minutes = int(total_seconds // 60)
-  hours = total_minutes // 60
-  minutes = total_minutes % 60
+def format_time(total_seconds: float):
+  total_seconds = int(total_seconds)
+  hours = total_seconds // 3600
+  minutes = (total_seconds % 3600) // 60
+  seconds = total_seconds % 60
 
-  return hours, minutes
+  return hours, minutes, seconds
