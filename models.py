@@ -1,21 +1,32 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from fastapi import Form
 
-class Segment(BaseModel):
-  segment: int
-  distance_km: float
-  grade_percent: float
-  zone: str
-  power_w: float
-  speed_kmh: float
-  time_min: float
-
 class RouteSegment(BaseModel):
-  distance: float # distance
-  grade: float # average grade
+  index: int
+  distance: float # in meters
+  grade: float
+  heading: float
+  zone: str # zone name
+  power_w: float # in watts
+  time_min: float 
+
+class RouteSegmentsGroupedByDistance(BaseModel):
+  distance: float
+  grade: float
   heading: float
   zone: str
+
+class RouteSegmentGroupedByZoneAndTime(BaseModel):
+  zone: str
+  power_w: float
+  time_min: float
+
+#class RouteSegment(BaseModel):
+#  distance: float # distance
+#  grade: float # average grade
+#  heading: float
+#  zone: str
 
 class RideParameters(BaseModel):
   ftp: int
@@ -23,7 +34,7 @@ class RideParameters(BaseModel):
   wind_dir: int
   rider_mass: float
   bike_mass: float
-  route_segments: List[RouteSegment]
+  route_segments: List[RouteSegmentsGroupedByDistance]
   cda: float # coefficient of drag 
   cr: float # coefficient of rolling
   air_density: float
@@ -50,4 +61,12 @@ class PowerBalanceParameter(BaseModel):
 
 class WorkoutRequest(BaseModel):
   ftp: int
-  segments: List[Segment]
+  segments: List[RouteSegment]
+
+class EstimateFTPRequest(BaseModel):
+  segments: List[RouteSegment]
+  wind_dir: int
+  wind_speed: float
+  rider_mass: float
+  bike_mass: float
+  target_time_sec: int
