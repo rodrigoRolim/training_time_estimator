@@ -1,10 +1,10 @@
 from fastapi import APIRouter, File, Form, UploadFile, HTTPException
 from fastapi.responses import JSONResponse, StreamingResponse
-from models import RideParameters, SegmentGenerationConfig, Segment, WorkoutRequest
+from models import RideParameters, SegmentGenerationConfig, WorkoutRequest, EstimateFTPRequest
 from services.time_estimator_service import estimate_training_time_required_to_route
-from services.route_service import create_segmented_route_from_route_file
+from services.route_service import create_segmented_route_from_route_file, group_segments_by_zone_and_time
 from services.workout_service import generate_mrc_from_zones
-
+from services.ftp_estimator_service import estimate_ftp_for_target_time
 from typing import List
 import tempfile
 import os
@@ -41,6 +41,7 @@ async def get_training_time_required_to_route(
       min_distance=100
     )
     segmented_route = create_segmented_route_from_route_file(config_route_segmentation)
+    # grouped_route_segment = group_segments_by_zone_and_time(tiny_segmented_routes)
 
     ride_parameter = RideParameters(
       ftp=ftp,
@@ -56,10 +57,10 @@ async def get_training_time_required_to_route(
     )
 
     estimated_time, total_distance, segments = estimate_training_time_required_to_route(ride_parameter)
-    hours, minutes = estimated_time
+    hours, minutes, seconds = estimated_time
     return JSONResponse(
       content={
-        "estimated_time": {"hours": hours, "minutes": minutes},
+        "estimated_time": {"hours": hours, "minutes": minutes, "seconds": seconds},
         "total_distance": total_distance,
         "segments": segments
       }
@@ -68,14 +69,19 @@ async def get_training_time_required_to_route(
     if os.path.exists(file_path):
       os.remove(file_path)
 
-@router.post("/create-workout")
+@router.post(
+  "/create-workout",
+  summary="Create a workout file .tcx based on route segments",
+  description="Uploads a TCX file and send rider's FTP."  
+)
 async def create_workout_from_route(workout_req: WorkoutRequest) -> StreamingResponse:
   # save the file temporarily
   
   try:
     # Cria um buffer de bytes em memória
     mrc_buffer = io.BytesIO()
-    generate_mrc_from_zones(workout_req.segments, workout_req.ftp, mrc_buffer)
+    grouped_route_segment = group_segments_by_zone_and_time(workout_req.segments)
+    generate_mrc_from_zones(grouped_route_segment, workout_req.ftp, mrc_buffer)
     # Volta para o início do buffer para leitura
     mrc_buffer.seek(0)
 
@@ -90,4 +96,20 @@ async def create_workout_from_route(workout_req: WorkoutRequest) -> StreamingRes
     logger.exception("Erro ao criar workout")
     print("".join(traceback.format_exception(type(e), e, e.__traceback__)))
     raise HTTPException(status_code=500, detail=f"Erro interno: {e}")
- 
+
+@router.post('/estimate-training-ftp')
+async def estimate_training_ftp(
+ request: EstimateFTPRequest
+):
+  return estimate_ftp_for_target_time(
+    wind_speed=request.wind_speed,
+    wind_dir=request.wind_dir,
+    rider_mass=request.rider_mass,
+    bike_mass=request.bike_mass,
+    route_segments=request.segments,
+    cda=0.30,
+    cr=0.005,
+    air_density=1.225,
+    gravity=9.81,
+    target_time_sec=request.target_time_sec
+  )
