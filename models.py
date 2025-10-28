@@ -1,5 +1,15 @@
 from pydantic import BaseModel
 from typing import List
+from fastapi import Form
+
+class Segment(BaseModel):
+  segment: int
+  distance_km: float
+  grade_percent: float
+  zone: str
+  power_w: float
+  speed_kmh: float
+  time_min: float
 
 class RouteSegment(BaseModel):
   distance: float # distance
@@ -37,3 +47,7 @@ class PowerBalanceParameter(BaseModel):
   total_mass: float
   gravity: float
   slope: float
+
+class WorkoutRequest(BaseModel):
+  ftp: int
+  segments: List[Segment]
