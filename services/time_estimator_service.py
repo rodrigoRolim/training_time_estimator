@@ -31,21 +31,21 @@ def estimate_training_time_required_to_route(ride_parameters: RideParameters):
       ride_parameters.gravity, 
       slope
     )
-
-    time_segment_sec = segment.distance / rider_velocity
+    # power_avail = (Pa + Pc + Pr) * v
+    time_segment_sec = segment.distance / rider_velocity # the inverse: rider_velocity = segment.distance / time_segment_sec
     total_time_sec += time_segment_sec
     total_dist_m += segment.distance
 
     details.append({
-      "segment": i + 1, # util to create the workout file
-      "distance_km": segment.distance / 1000,
-      "grade_percent": segment.grade,
+      "index": i + 1, # util to create the workout file
+      "distance": segment.distance, # in meters
+      "grade": segment.grade,
+      "heading": segment.heading,
       "zone": segment.zone,  # util to create the workout file
       "power_w": power, # util to create the workout file
-      "speed_kmh": rider_velocity * 3.6,
       "time_min": time_segment_sec / 60 # util to create the workout file
     })
 
-  total_time_h_m = format_time(total_time_sec)
+  total_time_h_m_s = format_time(total_time_sec)
   total_dist_km = total_dist_m / 1000
-  return total_time_h_m, total_dist_km, details
+  return total_time_h_m_s, total_dist_km, details
