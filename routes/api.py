@@ -113,3 +113,66 @@ async def estimate_training_ftp(
     gravity=9.81,
     target_time_sec=request.target_time_sec
   )
+
+@router.post('/create-workout-file')
+async def create_workout_file(
+  file: UploadFile = File(...), 
+  ftp: str = Form(...),
+  pace: str = Form(...),
+  rider_mass: str =  Form(...), 
+  bike_mass: str = Form(...),
+  date: str = Form(...)
+) -> StreamingResponse:
+  wind_dir = 30 # degrees
+  wind_speed = 10 # m/s
+
+  try:
+    uptaded_ftp = float(ftp) * float(pace)
+    clean_date = date.replace("/", "")
+
+    # save the file temporarily
+    tmp_dir = tempfile.gettempdir()
+    file_path = os.path.join(tmp_dir, file.filename)
+    with open(file_path, "wb") as tmp_file:
+      tmp_file.write(await file.read())
+
+    config_route_segmentation = SegmentGenerationConfig(
+      file=file_path,
+      smoothing_window=3,
+      min_distance=100
+    )
+    segmented_route = create_segmented_route_from_route_file(config_route_segmentation)
+    ride_parameter = RideParameters(
+      ftp=ftp,
+      wind_speed=wind_speed,
+      wind_dir=wind_dir,
+      rider_mass=float(rider_mass),
+      bike_mass=float(bike_mass),
+      route_segments=segmented_route,
+      cda=0.30,
+      cr=0.005,
+      air_density=1.225,
+      gravity=9.81
+    )
+
+    _, _, segments = estimate_training_time_required_to_route(ride_parameter)
+
+    # Cria um buffer de bytes em memória
+    mrc_buffer = io.BytesIO()
+    grouped_route_segment = group_segments_by_zone_and_time(segments)
+    generate_mrc_from_zones(grouped_route_segment, uptaded_ftp, mrc_buffer)
+    
+    # Volta para o início do buffer para leitura
+    mrc_buffer.seek(0)
+
+    # Retorna como StreamingResponse para download
+    filename = f"workout_{uptaded_ftp}_{clean_date}_watts.mrc"
+    return StreamingResponse(
+      mrc_buffer,
+      media_type="text/plain",
+      headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+  except Exception as e:
+    logger.exception("Erro ao criar workout")
+    print("".join(traceback.format_exception(type(e), e, e.__traceback__)))
+    raise HTTPException(status_code=500, detail=f"Erro interno: {e}")
