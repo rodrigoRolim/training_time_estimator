@@ -47,15 +47,15 @@ def create_segmented_route_from_route_file(segment_generation_config: SegmentGen
 
 def group_segments_by_zone_and_time(segments, min_duration=0.5, min_segments=5):
   merged = []
-  current_zone = segments[0].zone
+  current_zone = segments[0]['zone']
   total_time = 0
   total_power = 0
   buffer = []
 
   for segment in segments:
-    zone = segment.zone
-    power = segment.power_w
-    time_min = segment.time_min
+    zone = segment['zone']
+    power = segment['power_w']
+    time_min = segment['time_min']
 
     if zone == current_zone and (total_time < min_duration or len(buffer) < min_segments):
       # same zone, accumulate
