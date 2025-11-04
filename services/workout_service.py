@@ -20,18 +20,18 @@ def generate_mrc_from_zones(grouped_segments_by_time_and_zone: List[RouteSegment
 
   # Initial block
   first_power = (grouped_segments_by_time_and_zone[0].power_w / ftp) * 100
-  buffer.write(f"0.000\t{first_power:.1f}\n".encode())
+  buffer.write(f"0.000\t{round(first_power)}\n".encode())
 
   for i, seg in enumerate(grouped_segments_by_time_and_zone):
     cumulative_time += seg.time_min
     current_power = (seg.power_w / ftp) * 100
 
     # end of segment
-    buffer.write(f"{cumulative_time:.3f}\t{current_power:.1f}\n".encode())
+    buffer.write(f"{cumulative_time:.3f}\t{round(current_power)}\n".encode())
 
     # if there's a next segment, repeat time with new power
     if i < len(grouped_segments_by_time_and_zone) - 1:
       next_power = (grouped_segments_by_time_and_zone[i + 1].power_w / ftp) * 100
-      buffer.write(f"{cumulative_time:.3f}\t{next_power:.1f}\n".encode())
+      buffer.write(f"{cumulative_time:.3f}\t{round(next_power)}\n".encode())
 
   buffer.write("[END COURSE DATA]\n".encode())
