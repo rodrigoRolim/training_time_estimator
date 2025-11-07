@@ -125,7 +125,7 @@ async def create_workout_file(
 ) -> StreamingResponse:
   wind_dir = 30 # degrees
   wind_speed = 10 # m/s
-  ONE_LBS_IN_KG = 0.45359237
+  ONE_LBS_IN_KG = 0.45359237 # one lbs in one kg
 
   try:
     uptaded_ftp = float(ftp) * float(pace)
