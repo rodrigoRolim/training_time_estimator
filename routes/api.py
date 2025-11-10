@@ -128,8 +128,8 @@ async def create_workout_file(
   ONE_LBS_IN_KG = 0.45359237 # one lbs in one kg
 
   try:
-    uptaded_ftp = float(ftp) * float(pace)
-    clean_date = date.replace("/", "")
+    uptaded_ftp = round(float(ftp) * float(pace))
+    dashed_date = date.replace("/", "-")
 
     # save the file temporarily
     tmp_dir = tempfile.gettempdir()
@@ -167,7 +167,7 @@ async def create_workout_file(
     mrc_buffer.seek(0)
 
     # Retorna como StreamingResponse para download
-    filename = f"workout_{uptaded_ftp}_{clean_date}_watts.mrc"
+    filename = f"workout_{dashed_date}.mrc"
     return StreamingResponse(
       mrc_buffer,
       media_type="text/plain",
